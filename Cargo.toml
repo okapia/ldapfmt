@@ -1,0 +1,31 @@
+[package]
+name = "ldapfmt"
+version = "1.0.0"
+description = "Tool for template-driven formatted output from LDAP queries"
+homepage = "https://github.com/okapia/ldapfmt"
+edition = "2021"
+license = "MIT/Apache-2.0"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4.5", features = ["cargo", "derive"] }
+ldap3 = { version = "0.11", features = ["gssapi"] }
+minijinja = { version="2.3", features = [ "loader" ] }
+tokio = { version = "1", features = ["full"] }
+url = "2"
+
+[profile.release]
+lto = true
+panic = 'abort'
+opt-level = 3
+codegen-units = 1
+
+[build-dependencies]
+clap = { version = "4.5", features = ["cargo", "derive"] }
+clap_complete = "4.5"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+ldapfmt = { path = "/usr/bin/ldapfmt" }

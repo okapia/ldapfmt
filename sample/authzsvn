@@ -1,0 +1,12 @@
+#!/usr/bin/env target/release/ldapfmt
+{% macro account(repo, group, path) -%}
+[{{ repo }}:{{ path|default('/') }}]
+{% for user in search("(&(cn=" + group + ")(objectClass=ipausergroup))", [ "member" ])
+  | first
+  | attr('member')
+  | sort -%}
+{{ user | replace('uid=','') | split(',') | first }} = rw
+{% endfor -%}
+{% endmacro -%}
+
+{{ account('repo', 'group') }}

@@ -1,0 +1,41 @@
+#!/usr/bin/env target/release/ldapfmt
+{| class="wikitable"
+|+
+!Group Name
+!Responsibles
+!Members
+!Account Access
+{%- for grp in search("(memberManager=uid=*)", ["cn", "memberManager", "member"]) | sort(attribute='cn') %}
+|-
+| {{ grp.cn | first }}
+| {{ grp.memberManager
+    | map('replace','uid=','')
+    | map('split',',')
+    | map('first')
+    | sort
+    | join(', ') }}
+| {{ (grp.member
+    | select('startingwith','cn=')
+    | map('replace','cn=',"''")
+    | map('replace',',',"'',")
+    | map('split',',')
+    | map('first')
+    | sort
+    + grp.member
+    | select('startingwith','uid=')
+    | map('replace','uid=','')
+    | map('split',',')
+    | map('first')
+    | sort)
+    | join(', ') }}
+| {{ search("(&(objectClass=ipasudorule)(cn=account_access_*)(memberuser=cn=" ~ grp.cn | first ~ ",*))",
+    [ "ipaSudoRunAs" ])
+    | map(attribute='ipaSudoRunAs')
+    | last
+    | map('replace','uid=','')
+    | map('split',',')
+    | map('first')
+    | sort
+    | join(', ') -}}
+{% endfor %}
+|}

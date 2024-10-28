@@ -1,0 +1,112 @@
+.Dd October 20, 2024
+.Dt LDAPFMT 1
+.Os
+.Sh NAME
+.Nm ldapfmt
+.Nd template driven formatter for LDAP queries
+.Sh SYNOPSIS
+.Nm ldapfmt
+.Op Fl h | V | Z
+.Op Fl D Ar binddn
+.Op Fl H Ar uri ...
+.Op Fl b Ar searchbase
+.Op Fl w Ar password
+.Op Fl Y Ar mech
+.Op Ar template
+.Op Ar args ...
+.Sh DESCRIPTION
+.Nm
+takes as input a Jinja2 template containing LDAP queries and formats the
+result. It can be used as a script interpreter by starting the template with a
+shebang line.
+.Pp
+This has a variety of uses ranging from expanding group membership for tools
+that have limited support for LDAP groups, producing reports for web pages to
+looking up values for use with the
+.Ql AuthorizedKeysCommand
+and similar options of
+.Xr sshd 8 .
+.Pp
+By default, the OpenLDAP configuration file is used to set defaults for making
+LDAP connections but the following command-line options, corresponding to those
+of
+.Xr ldapsearch 1 ,
+are available:
+.Bl -tag -width Ds
+.It Fl H
+Specify LDAP URI(s) to connect to. Either a comma or a space can be used to
+separate multiple URIs.
+.It Fl D Ar binddn
+Specify bind DN.
+.It Fl b Ar searchbase
+Specify search base.
+.It Fl w Ar password
+Specify the password for simple authentication. Note that command arguments can
+be visible to other users such as in process listings so this should only be
+used advisedly.
+.It Fl Y Ar {gssapi|external|simple}
+Specify the SASL mechanism to be used for authentication.
+.It Fl Z
+Issue StartTLS extended operation.
+.It Fl h
+Show a brief usage summary of the program.
+.It Fl V
+Show version of program.
+.El
+.Sh FUNCTIONS
+The minijinja implementaton of Jinja2 is used and any of the builtin functions
+and filters defined by that are available. In addition, the following
+additional functions are defined:
+.Pp
+.Fo search
+.Fa filter ,
+.Fa Op attribute, ...
+.Fc
+.Bd -offset indent
+Perform an LDAP search with the given filter and return the results as a list
+of dictionaries. Each attribute is also returned as a list because LDAP
+attributes can have multiple values. Where only one value is expected, use a filter such as
+.Ql first
+to extract the value. If the list of attributes is ommitted, all attributes are returned.
+.Ed
+.Pp
+.Fn args
+.Bd -offset indent
+Returns the remaining command-line arguments that follow the template filename
+as a list.
+.Ed
+.Pp
+.Fo error
+.Fa message
+.Fc
+.Bd -offset indent
+Prints an error message and exits with a non-zero status.
+.Ed
+.Sh EXAMPLES
+.Pp
+The following are some simple examples. The
+.Pa sample
+directory in the source distribution contains a number of more complex examples.
+.Pp
+Find all groups that a user has delegated management of.
+.Pp
+.Be -literal
+{{ search("(memberManager=uid=" + args() | first + ",*)",
+    ["cn", "memberManager" ])
+  | map(attribute='cn')
+  | sort
+  | map('join', '\\n')
+  | join('\\n') }}
+.Ed
+.Pp
+.Sh FILES
+.Bl -tag -width 6n
+.It Pa /etc/openldap/ldap.conf
+.Nm
+loads the OpenLDAP configuration to apply defaults for making
+connections to the LDAP server.
+.El
+.Sh "SEE ALSO"
+.Xr ldapsearch 1 ,
+.Xr ldap.conf 5 ,
+.Xr sshd_config 5

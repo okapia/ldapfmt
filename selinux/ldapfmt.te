@@ -1,0 +1,94 @@
+policy_module(ldapfmt, 1.0.0);
+
+gen_require(`
+    type gssproxy_t;
+    type sshd_t;
+    type sssd_t;
+    type staff_t;
+    type user_t;
+    type guest_t;
+    type xguest_t;
+    type unconfined_t;
+    role staff_r;
+    role user_r;
+    role guest_r;
+    role xguest_r;
+    class capability net_admin;
+    class process { fork getsched noatsecure rlimitinh siginh };
+    class fd use;
+    class dir search;
+    class file { getattr open read };
+    class unix_stream_socket { connect create read write };
+    class tcp_socket { connect create getopt read write };
+')
+
+type ldapfmt_exec_t;
+type ldapfmt_t;
+
+# Type transition when /usr/bin/ldapfmt runs
+type_transition { staff_t user_t guest_t xguest_t sshd_t } ldapfmt_exec_t:process ldapfmt_t;
+corecmd_executable_file(ldapfmt_exec_t)
+can_exec({ staff_t user_t guest_t xguest_t sshd_t }, ldapfmt_exec_t)
+domain_entry_file(ldapfmt_t, ldapfmt_exec_t)
+allow { staff_t user_t guest_t xguest_t sshd_t } ldapfmt_t:process transition;
+allow { unconfined_t staff_t user_t guest_t xguest_t sshd_t } ldapfmt_exec_t:file entrypoint;
+role system_r types ldapfmt_t;
+role staff_r types ldapfmt_t;
+role user_r types ldapfmt_t;
+role guest_r types ldapfmt_t;
+role xguest_r types ldapfmt_t;
+
+#============= ldapfmt_t ==============
+allow ldapfmt_t self:dir search;
+allow ldapfmt_t self:file { getattr open read };
+allow ldapfmt_t self:process { fork getsched };
+allow ldapfmt_t self:tcp_socket { connect create getopt read write };
+allow ldapfmt_t self:unix_stream_socket { connect create read write };
+allow ldapfmt_t sshd_t:fd use;
+auth_read_passwd_file(ldapfmt_t)
+corecmd_read_bin_files(ldapfmt_t)
+corecmd_read_bin_symlinks(ldapfmt_t)
+corenet_tcp_connect_ldap_port(ldapfmt_t)
+dev_rw_null(ldapfmt_t)
+dev_search_sysfs(ldapfmt_t)
+files_list_etc(ldapfmt_t)
+files_list_root(ldapfmt_t)
+files_read_etc_files(ldapfmt_t)
+files_read_etc_symlinks(ldapfmt_t)
+files_search_pids(ldapfmt_t)
+files_search_usr(ldapfmt_t)
+files_search_var(ldapfmt_t)
+files_search_var_lib(ldapfmt_t)
+gssproxy_search_lib(ldapfmt_t)
+gssproxy_stream_connect(ldapfmt_t)
+kerberos_read_config(ldapfmt_t)
+kerberos_read_keytab(ldapfmt_t)
+kernel_read_crypto_sysctls(ldapfmt_t)
+kernel_read_proc_symlinks(ldapfmt_t)
+kernel_search_network_sysctl(ldapfmt_t)
+kernel_search_proc(ldapfmt_t)
+libs_exec_ld_so(ldapfmt_t)
+libs_exec_lib_files(ldapfmt_t)
+libs_search_lib(ldapfmt_t)
+libs_use_ld_so(ldapfmt_t)
+miscfiles_read_generic_certs(ldapfmt_t)
+miscfiles_read_localization(ldapfmt_t)
+miscfiles_rw_localization(ldapfmt_t)
+miscfiles_watch_localization_dirs(ldapfmt_t)
+selinux_getattr_fs(ldapfmt_t)
+seutil_search_config(ldapfmt_t)
+ssh_rw_pipes(ldapfmt_t)
+sssd_read_public_files(ldapfmt_t)
+sssd_run_stream_connect(ldapfmt_t)
+sssd_search_lib(ldapfmt_t)
+sysnet_read_config(ldapfmt_t)
+
+#============= gssproxy_t ==============
+allow gssproxy_t ldapfmt_t:dir search;
+
+#============= sshd_t ==============
+allow sshd_t ldapfmt_t:process { noatsecure rlimitinh siginh };
+
+#============= sssd_t ==============
+allow sssd_t ldapfmt_t:dir search;
+allow sssd_t ldapfmt_t:file { open read };

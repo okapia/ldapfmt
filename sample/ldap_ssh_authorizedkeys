@@ -1,0 +1,22 @@
+#!/usr/bin/env -S GSS_USE_PROXY=1 /usr/bin/ldapfmt
+{% if args() | length != 1 %}{% do error("Incorrect number of arguments") %}{% endif -%}
+{% set user = args() | first -%}
+{# Get the list of users who are permitted to access the target account via sudo #}
+{% set sudoers = search("(&(objectClass=ipasudorule)(ipaSudoRunAs=uid=" + user + ",cn=users,cn=accounts,*)(ipaEnabledFlag=TRUE))",
+    [ 'memberUser']) -%}
+{% set query = "(uid=" + user + ")" -%}
+{% if sudoers|length > 0 -%}
+  {% set query = "(|(memberOf=" + sudoers
+    | map(attribute='memberUser')
+    | first
+    | join(')(memberOf=') + ")" + query  + ")" -%}
+{% endif -%}
+{% for user in search(query, [ "uid", "ipaSshPubKey" ]) | rejectattr('ipaSshPubKey', 'undefined') -%}
+  {% for key in user.ipaSshPubKey -%}
+    environment="AUTH_USER={{ user.uid | first }}" {{ key }}
+{% endfor -%}
+{% endfor -%}
+{#- Add the Jenkins CI key for software accounts -#}
+{% if search("(&(uid=" + user + ")(memberOf=cn=software,cn=groups,*))", [ 'uid' ]) | length > 0 -%}
+command="/usr/local/sbin/rrsync",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty' {{ search("(&(uid=jenkins)(objectClass=ipasshuser))", [ 'ipaSshPubKey' ]) | first | attr('ipaSshPubKey') | first -}}
+{% endif -%}

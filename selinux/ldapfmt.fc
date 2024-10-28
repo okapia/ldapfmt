@@ -1,0 +1,1 @@
+/usr/bin/ldapfmt	--	gen_context(system_u:object_r:ldapfmt_exec_t,s0)
