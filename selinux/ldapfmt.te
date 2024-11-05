@@ -85,6 +85,7 @@ sysnet_read_config(ldapfmt_t)
 
 #============= gssproxy_t ==============
 allow gssproxy_t ldapfmt_t:dir search;
+allow gssproxy_t ldapfmt_t:{ file lnk_file } read;
 
 #============= sshd_t ==============
 allow sshd_t ldapfmt_t:process { noatsecure rlimitinh siginh };
