@@ -116,7 +116,10 @@ fn main() -> Result<(), anyhow::Error> {
             Ok(rs
                 .iter()
                 .map(|entry| {
-                    SearchEntry::construct(entry.clone()).attrs // can the clone be avoidsed by consuming the vector
+                    // can the clone be avoided by consuming the vector
+                    let mut s = SearchEntry::construct(entry.clone());
+                    s.attrs.insert("dn".to_string(), vec![s.dn]);
+                    s.attrs
                 })
                 .collect::<Vec<_>>())
         },
