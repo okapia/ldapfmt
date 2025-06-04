@@ -108,16 +108,15 @@ fn main() -> Result<(), anyhow::Error> {
             let mut l = closureldap
                 .lock()
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?;
-            let (rs, _res) = l
+            let (mut rs, _res) = l
                 .search(&data.base, Scope::Subtree, filter.as_str(), fields)
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?
                 .success()
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?;
             Ok(rs
-                .iter()
+                .drain(..)
                 .map(|entry| {
-                    // can the clone be avoided by consuming the vector
-                    let mut s = SearchEntry::construct(entry.clone());
+                    let mut s = SearchEntry::construct(entry);
                     s.attrs.insert("dn".to_string(), vec![s.dn]);
                     s.attrs
                 })
