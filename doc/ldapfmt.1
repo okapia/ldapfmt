@@ -60,14 +60,17 @@ additional functions are defined:
 .Pp
 .Fo search
 .Fa filter ,
-.Fa Op attribute, ...
+.Op Fa attribute, ...
 .Fc
 .Bd -offset indent
 Perform an LDAP search with the given filter and return the results as a list
 of dictionaries. Each attribute is also returned as a list because LDAP
 attributes can have multiple values. Where only one value is expected, use a filter such as
 .Ql first
-to extract the value. If the list of attributes is ommitted, all attributes are returned.
+to extract the value. If the list of attributes is ommitted, all attributes are
+returned. The distinguished name (dn) of each entry is also included
+in the attributes. There can only be one value for this field but it is
+returned as a single-element list for consistency.
 .Ed
 .Pp
 .Fn args
