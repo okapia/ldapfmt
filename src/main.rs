@@ -123,12 +123,13 @@ fn main() -> Result<(), anyhow::Error> {
                 .collect::<Vec<_>>())
         },
     );
-    env.add_function("args", move || -> Vec<String> { args.to_vec() });
     env.add_function("error", |msg: String| -> Result<(), Error> {
         Err(Error::new(ErrorKind::InvalidOperation, msg))
     });
     let tmpl = env.get_template(template)?;
-    println!("{}", tmpl.render(context!())?);
+    println!("{}", tmpl.render(context!(
+            args => args.to_vec()
+        ))?);
     if let Ok(mut l) = ldap.lock() {
         l.unbind()?;
     }
