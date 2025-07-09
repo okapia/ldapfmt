@@ -1,5 +1,5 @@
 #!/usr/bin/env target/release/ldapfmt
-{{ search("(memberManager=uid=" + args() | first + ",*)", ["cn", "memberManager" ])
+{{ search("(memberManager=uid=" + args | first + ",*)", ["cn", "memberManager" ])
   | map(attribute='cn')
   | sort
   | map('join', '\n')

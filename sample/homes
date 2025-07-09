@@ -1,6 +1,6 @@
 #!/usr/bin/env target/release/ldapfmt
-{% if args() | length != 1 %}{% do error("Incorrect number of arguments") %}{% endif -%}
-{{ search("(&(|(cn=" + args() | first + ")(automountkey=" + args() | first + "))(objectClass=automount))", ["automountInformation" ])
+{% if args | length != 1 %}{% do error("Incorrect number of arguments") %}{% endif -%}
+{{ search("(&(|(cn=" + args | first + ")(automountkey=" + args | first + "))(objectClass=automount))", ["automountInformation" ])
   | map(attribute='automountInformation')
   | sort
   | unique

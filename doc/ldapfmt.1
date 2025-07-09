@@ -73,17 +73,30 @@ in the attributes. There can only be one value for this field but it is
 returned as a single-element list for consistency.
 .Ed
 .Pp
-.Fn args
-.Bd -offset indent
-Returns the remaining command-line arguments that follow the template filename
-as a list.
-.Ed
-.Pp
 .Fo error
 .Fa message
 .Fc
 .Bd -offset indent
 Prints an error message and exits with a non-zero status.
+.Ed
+.Sh VARIABLES
+The following variables are available to the template. These are not read-only
+and can have new values assigned.
+.Pp
+.Va args
+.Bd -offset indent
+Contains the remaining command-line arguments that follow the template filename
+as a list.
+.Ed
+.Pp
+.Va searchbase
+.Bd -offset indent
+The search base dn as specified with the
+.Fl b
+option. If the variables is changed, the new value is used in subsequent calls
+to the
+.Fn search
+function.
 .Ed
 .Sh EXAMPLES
 .Pp
@@ -94,7 +107,7 @@ directory in the source distribution contains a number of more complex examples.
 Find all groups that a user has delegated management of.
 .Pp
 .Be -literal
-{{ search("(memberManager=uid=" + args() | first + ",*)",
+{{ search("(memberManager=uid=" + args | first + ",*)",
     ["cn", "memberManager" ])
   | map(attribute='cn')
   | sort

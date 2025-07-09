@@ -1,16 +1,17 @@
 [package]
 name = "ldapfmt"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tool for template-driven formatted output from LDAP queries"
 homepage = "https://github.com/okapia/ldapfmt"
-edition = "2021"
+edition = "2024"
 license = "MIT/Apache-2.0"
 
 [dependencies]
 anyhow = "1"
 clap = { version = "4.5", features = ["cargo", "derive"] }
 ldap3 = { version = "0.11", features = ["gssapi"] }
-minijinja = { version="2.3", features = [ "loader" ] }
+minijinja = { version="2.11", features = [ "loader" ] }
+minijinja-contrib = { version="2.11", features = [ "datetime" ] }
 tokio = { version = "1", features = ["full"] }
 url = "2"
 

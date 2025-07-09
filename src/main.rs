@@ -4,7 +4,7 @@ use crate::ldapconf::ConfigSettings;
 use crate::cli::{build_cli,SaslMech};
 use anyhow::{Context, Result};
 use ldap3::{LdapConn, LdapConnSettings, Scope, SearchEntry};
-use minijinja::{context, path_loader, Environment, Error, ErrorKind};
+use minijinja::{context, path_loader, Environment, Error, ErrorKind, State};
 use std::collections::HashMap;
 use std::fs;
 use std::process::exit;
@@ -96,20 +96,26 @@ fn main() -> Result<(), anyhow::Error> {
         }
     }));
     let mut env = Environment::new();
+    minijinja_contrib::add_to_environment(&mut env);
     env.set_loader(path_loader(prefix));
     env.add_template(template, &stdin[pos..])
         .context("Failed to compile template")?;
     let closureldap = Arc::clone(&ldap);
+    let base_dn = data.base.clone();
     env.add_function(
         "search",
-        move |filter: String,
+        move |state: &State, filter: String,
               fields: Vec<String>|
               -> Result<Vec<HashMap<String, Vec<String>>>, Error> {
+            let base = state.lookup("searchbase");
+            let base = base.as_ref()
+                .and_then(|x| x.as_str())
+                .unwrap_or(&base_dn[..]);
             let mut l = closureldap
                 .lock()
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?;
             let (mut rs, _res) = l
-                .search(&data.base, Scope::Subtree, filter.as_str(), fields)
+                .search(base, Scope::Subtree, filter.as_str(), fields)
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?
                 .success()
                 .map_err(|e| Error::new(ErrorKind::InvalidOperation, e.to_string()))?;
@@ -128,7 +134,8 @@ fn main() -> Result<(), anyhow::Error> {
     });
     let tmpl = env.get_template(template)?;
     println!("{}", tmpl.render(context!(
-            args => args.to_vec()
+            args => args.to_vec(),
+            searchbase => data.base
         ))?);
     if let Ok(mut l) = ldap.lock() {
         l.unbind()?;

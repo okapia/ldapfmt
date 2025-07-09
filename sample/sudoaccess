@@ -1,6 +1,6 @@
 #!/usr/bin/env target/release/ldapfmt
-{% if args() | length != 1 %}{% do error("Incorrect number of arguments") %}{% endif -%}
-{% set user = args() | first -%}
+{% if args | length != 1 %}{% do error("Incorrect number of arguments") %}{% endif -%}
+{% set user = args | first -%}
 {% set sudoers = search("(&(objectClass=ipasudorule)(ipaSudoRunAs=uid=" + user + ",cn=users,cn=accounts,*)(ipaEnabledFlag=TRUE))",
     [ 'memberUser']) -%}
 {% if sudoers|length > 0 -%}
