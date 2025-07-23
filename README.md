@@ -6,7 +6,7 @@ When using LDAP, writing a shell script which uses `ldapsearch`, typically
 piped to `sed`, ends up being the clumsy solution to a variety of problems. If
 multiple searches are needed, this is not especially efficient because separate
 connections to the LDAP server are made. There are scripting languages that can
-hook into a proper ABI for LDAP queries but for typical use cases, a template
+hook into a proper API for LDAP queries but for typical use cases, a template
 language can express the desired results more succinctly.
 
 ldapfmt combines [minijinja](https://github.com/mitsuhiko/minijinja) with
@@ -25,19 +25,23 @@ The following additional Jinja2 functions are defined:
 : Return the result of an LDAP search. `filter` is a standard LDAP filter
 expression. Results are limited to the specified fields. These are all lists
 because there can be multiple values with the same key in an LDAP entry.
-`args()`
-: Return command-line arguments
+
 `error(message)`
 : Abort processing returning status 1 and the specfied error message.
+
+## Variables
+
+The following additional Jinja2 variables are used:
+
+`args`
+: Contains the command-line arguments
+
+`searchbase`
+: Contains the base dn used for searches
 
 ## Examples
 
 The `sample` directory contains a number of examples:
-
-`permissions_wiki`
-: Dumps groups from [FreeIPA](https://www.freeipa.org/) where management of the
-group had been delegated. Output in a [MediaWiki](https://www.mediawiki.org/)
-format table.
 
 `ldap_ssh_authorizedkeys`
 : An example for use with the `AuthorizedKeysCommand` of `sshd` which returns
@@ -46,3 +50,8 @@ to add public keys for additional users.
 
 `authzsvn`
 : Expands groups in a configuration file for a subversion server.
+
+`permissions_wiki`
+: Dumps groups from [FreeIPA](https://www.freeipa.org/) where management of the
+group had been delegated. Output in a [MediaWiki](https://www.mediawiki.org/)
+format table.
