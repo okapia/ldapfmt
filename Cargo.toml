@@ -1,6 +1,6 @@
 [package]
 name = "ldapfmt"
-version = "1.1.0"
+version = "2.0.0"
 description = "Tool for template-driven formatted output from LDAP queries"
 homepage = "https://github.com/okapia/ldapfmt"
 edition = "2024"
