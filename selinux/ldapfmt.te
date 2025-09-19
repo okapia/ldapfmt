@@ -25,6 +25,8 @@ gen_require(`
 type ldapfmt_exec_t;
 type ldapfmt_t;
 
+domain_type(ldapfmt_t)
+
 # Type transition when /usr/bin/ldapfmt runs
 type_transition { staff_t user_t guest_t xguest_t sshd_t } ldapfmt_exec_t:process ldapfmt_t;
 corecmd_executable_file(ldapfmt_exec_t)
